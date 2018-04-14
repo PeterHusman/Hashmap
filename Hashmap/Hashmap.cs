@@ -14,6 +14,9 @@ namespace Hashmap
 
         public int Count { get; private set; }
 
+
+        public int lastLookupTimeTEMP = 0;
+
         public TValue this[TKey key]
         {
             get
@@ -28,6 +31,7 @@ namespace Hashmap
                 {
                     if (node.Value.Key.Equals(key))
                     {
+                        lastLookupTimeTEMP = i + 1;
                         return node.Value.Value;
                     }
                     node = node.Next;
@@ -47,6 +51,8 @@ namespace Hashmap
                     if (node.Value.Key.Equals(key))
                     {
                         node.Value = new KeyValuePair<TKey, TValue>(key, value);
+                        lastLookupTimeTEMP = i + 1;
+                        return;
                     }
                     node = node.Next;
                 }
@@ -83,11 +89,20 @@ namespace Hashmap
                 var tempVals = new LinkedList<KeyValuePair<TKey, TValue>>[vals.Length * 2];
                 for (int i = 0; i < vals.Length; i++)
                 {
-                    var node = vals[i].First;
-                    for (int j = 0; j < vals[i].Count; j++)
+                    if (vals[i] != null)
                     {
-                        tempVals[hash(node.Value.Key) % tempVals.Length].AddLast(node.Value);
-                        node = node.Next;
+                        var node = vals[i].First;
+                        for (int j = 0; j < vals[i].Count; j++)
+                        {
+                            int h = hash(node.Value.Key);
+                            if(tempVals[h%tempVals.Length] == null)
+                            {
+                                tempVals[h % tempVals.Length] = new LinkedList<KeyValuePair<TKey, TValue>>();
+                            }
+                            var toAddTo = tempVals[h % tempVals.Length];
+                            toAddTo.AddLast(node.Value);
+                            node = node.Next;
+                        }
                     }
                 }
                 vals = tempVals;
@@ -165,9 +180,12 @@ namespace Hashmap
         {
             if (hasUserHash)
             {
-                return hashFunc(key);
+                return hashFunc(key) & 0x7FFFFFFF;
             }
-            return key.GetHashCode();
+
+
+
+            return key.GetHashCode() & 0x7FFFFFFF;
         }
     }
 }
