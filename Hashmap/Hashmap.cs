@@ -71,6 +71,10 @@ namespace Hashmap
             {
                 throw new ArgumentException();
             }
+            if(vals[hashInRange(key)] == null)
+            {
+                vals[hashInRange(key)] = new LinkedList<KeyValuePair<TKey, TValue>>();
+            }
             Count++;
             vals[hashInRange(key)].AddLast(new KeyValuePair<TKey, TValue>(key, value));
 
@@ -93,6 +97,7 @@ namespace Hashmap
         public bool Delete(TKey key)
         {
             LinkedList<KeyValuePair<TKey, TValue>> ll = vals[hashInRange(key)];
+            if (ll == null) { return false; }
             LinkedListNode<KeyValuePair<TKey, TValue>> node = ll.First;
             for (int i = 0; i < ll.Count; i++)
             {
